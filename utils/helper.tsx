@@ -1,6 +1,6 @@
 import { ChatCompletionRequestMessage } from "openai";
 import { db } from "../config";
-import { ref, set, onValue, get, query, orderByChild, equalTo  } from "firebase/database";
+import { ref, set, onValue, get, query, orderByChild, equalTo, push  } from "firebase/database";
 
 export const writeUserData = (username: string, password: string) => {
   set(ref(db, "users/" + username), {
@@ -26,6 +26,7 @@ export const writeChat = async (userId: string, score: string, messages: ChatCom
     dateTime: todayDate.toString(),
     messages: messages
   })
+  return chatId;
 }
 
 export const creatChat = async (userId: string, score: string, messages: ChatCompletionRequestMessage[]) => {
@@ -36,7 +37,7 @@ export const creatChat = async (userId: string, score: string, messages: ChatCom
 }
 
 export const getChat = async (chatid: string) => {
-  const chat = ref(db, `chat/`);
+  const chat = ref(db, `chat/${chatid}`);
   const snapshot = await get(chat);
   if(snapshot.exists()) {
     const chat = snapshot?.val()
@@ -54,6 +55,12 @@ export const getUserData = async (username: string) => {
     return chat;
   }
   return [];
+}
+
+export const updateChat = async (chatid: number, username: string) => {
+  const users = ref(db, `users/${username}/chat`);
+  const newUser =  push(users);
+  set(newUser, {chatid});
 }
 
 export const login = async (username: string, password: string) => {
